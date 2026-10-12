@@ -1,1 +1,628 @@
-PLACEHOLDER - full content will be uploaded
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>USCG UPV Checklist (100–300 GT)</title>
+<style>
+  :root {
+    --primary: #003366;
+    --accent: #c8102e;
+    --bg: #f4f7fa;
+    --card: #ffffff;
+    --border: #d0d7de;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background: var(--bg);
+    color: #24292f;
+    line-height: 1.5;
+  }
+  header {
+    background: var(--primary);
+    color: white;
+    padding: 20px 24px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  header h1 { margin: 0 0 6px; font-size: 1.6rem; }
+  header p { margin: 0; opacity: 0.9; font-size: 0.95rem; }
+  .meta-form {
+    background: var(--card);
+    padding: 16px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    border: 1px solid var(--border);
+  }
+  .meta-form label { font-weight: 600; font-size: 0.85rem; display: block; margin-bottom: 4px; }
+  .meta-form input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 0.95rem;
+  }
+  .controls {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  button {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+  button:hover { background: #004080; }
+  button.secondary { background: #6e7781; }
+  button.secondary:hover { background: #57606a; }
+  button.danger { background: var(--accent); }
+  button.danger:hover { background: #a50d26; }
+  .save-status {
+    font-size: 0.85rem;
+    color: #2da44e;
+    font-weight: 600;
+    margin-left: auto;
+  }
+  .section {
+    background: var(--card);
+    border-radius: 8px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .section-header {
+    background: #eef2f7;
+    padding: 12px 16px;
+    font-weight: 700;
+    font-size: 1.05rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+  }
+  .section-header:hover { background: #e1e8f0; }
+  .section-body { padding: 8px 0; }
+  .item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    padding: 10px 16px;
+    border-bottom: 1px solid #f0f3f6;
+    align-items: start;
+  }
+  .item:last-child { border-bottom: none; }
+  .item-text { font-size: 0.95rem; }
+  .item-text small { color: #57606a; display: block; margin-top: 2px; }
+  .citation {
+    color: var(--primary);
+    text-decoration: underline;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .citation:hover { color: #004080; }
+  .choices {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    white-space: nowrap;
+  }
+  .choices label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .choices input[type="radio"] { accent-color: var(--primary); width: 16px; height: 16px; }
+  .progress {
+    background: var(--card);
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+    font-weight: 600;
+  }
+  .progress-bar {
+    height: 8px;
+    background: #e1e4e8;
+    border-radius: 4px;
+    margin-top: 6px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: #2da44e;
+    width: 0%;
+    transition: width 0.3s;
+  }
+  footer {
+    text-align: center;
+    margin-top: 30px;
+    color: #6e7781;
+    font-size: 0.85rem;
+  }
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: white;
+    border-radius: 8px;
+    max-width: 700px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 24px;
+    position: relative;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+  }
+  .modal h2 { margin-top: 0; color: var(--primary); font-size: 1.2rem; }
+  .modal .content {
+    white-space: pre-wrap;
+    font-family: inherit;
+    background: #f8f9fa;
+    padding: 12px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+  .modal a { color: var(--primary); word-break: break-all; font-weight: 600; }
+  .modal .close-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: #6e7781;
+    color: white;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    cursor: pointer;
+  }
+  .modal .note { font-size: 0.8rem; color: #6e7781; margin-top: 12px; font-style: italic; }
+  @media print {
+    body { background: white; padding: 0; }
+    header, .controls, footer, .progress { display: none; }
+    .section { break-inside: avoid; border: 1px solid #ccc; page-break-inside: avoid; }
+    .section-header { background: #f0f0f0; }
+    button { display: none; }
+    .meta-form { display: block; border: none; padding: 0 0 12px; }
+    .meta-form input { border: none; border-bottom: 1px solid #000; border-radius: 0; }
+    .save-status { display: none; }
+    .modal-overlay { display: none !important; }
+  }
+  @media (max-width: 600px) {
+    .item { grid-template-columns: 1fr; }
+    .choices { margin-top: 8px; }
+    .controls { flex-direction: column; align-items: stretch; }
+    .save-status { margin-left: 0; text-align: center; }
+    .modal { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>USCG Uninspected Passenger Vessel Checklist</h1>
+  <p>Addendum for UPVs 100 GTs but less than 300 GTs that carry 12 or fewer passengers for hire<br>
+  Reference: LANT/PACAREAINST 16710.2 Enclosure (1) Addendum • Rev. 8/2017<br>
+  <small>Progress is auto-saved in your browser (localStorage) — works offline on phones. Click any citation for full text + official link.</small></p>
+</header>
+
+<div class="meta-form">
+  <div>
+    <label for="vesselName">Vessel Name</label>
+    <input type="text" id="vesselName" placeholder="e.g. M/V Example" oninput="scheduleSave()">
+  </div>
+  <div>
+    <label for="officialNumber">Official Number / Hull ID</label>
+    <input type="text" id="officialNumber" placeholder="e.g. 1234567" oninput="scheduleSave()">
+  </div>
+  <div>
+    <label for="inspectionDate">Inspection / Exam Date</label>
+    <input type="date" id="inspectionDate" oninput="scheduleSave()">
+  </div>
+  <div>
+    <label for="inspector">Inspector / Examiner</label>
+    <input type="text" id="inspector" placeholder="Name" oninput="scheduleSave()">
+  </div>
+  <div>
+    <label for="location">Location</label>
+    <input type="text" id="location" placeholder="Port / Harbor" oninput="scheduleSave()">
+  </div>
+</div>
+
+<div class="progress">
+  Completion: <span id="progressText">0 / 0</span>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+</div>
+
+<div class="controls">
+  <button onclick="exportPDF()">Export to PDF</button>
+  <button class="secondary" onclick="saveNow()">Save Now</button>
+  <button class="secondary" onclick="resetChecklist()">Reset Form</button>
+  <button class="danger" onclick="clearSavedData()">Clear Saved Data</button>
+  <button class="secondary" onclick="toggleAll(true)">Expand All</button>
+  <button class="secondary" onclick="toggleAll(false)">Collapse All</button>
+  <span class="save-status" id="saveStatus">Ready</span>
+</div>
+
+<div id="checklist"></div>
+
+<footer>
+  This checklist is a tool to assist with understanding requirements. Always consult the official Code of Federal Regulations (CFR) and applicable USCG guidance. Minimum safety requirements.<br>
+  Data is stored only in your browser’s local storage (device cache). Clearing browser data will remove saved progress.<br>
+  Citation texts are from the Electronic Code of Federal Regulations (eCFR) and are unofficial; the official print edition controls.
+</footer>
+
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <button class="close-btn" onclick="closeModal()">&times;</button>
+    <h2 id="modalTitle">Citation</h2>
+    <div class="content" id="modalContent"></div>
+    <div class="note">Source: Electronic Code of Federal Regulations (eCFR) or United States Code. This is not an official legal edition. Always verify against the official source.</div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'uscg_upv_checklist_v1';
+let saveTimeout = null;
+
+const citations = {
+  "185.420": "§ 185.420 Crew training.\\n\\n(a) The owner, charterer, master or managing operator shall instruct each crew member, upon first being employed and prior to getting underway for the first time on a particular vessel and at least once every three months, as to the duties that the crew member is expected to perform in an emergency including, but not limited to, the emergency instructions listed on the emergency instruction placard required by § 185.510 of this part and, when applicable, the duties listed in the station bill required by § 185.514 of this part.\\n\\n(b) For a vessel described by 46 CFR 175.110(c), the training program in paragraph (a) of this section must address firefighting proficiency and must include, but need not be limited to—\\n(1) Training in the use and location of firefighting equipment and general firefighting knowledge, including:\\n(i) Location of firefighting appliances and emergency escape routes;\\n(ii) Types and sources of ignition;\\n(iii) Flammable materials, fire hazards and spread of fire;\\n(iv) The need for constant vigilance;\\n(v) Actions to be taken on board;\\n(vi) Fire and smoke detection and automatic systems on board; and\\n(vii) Classification of fire and applicable extinguishing agents.\\n(2) The drills required by § 185.524, including fire location and fire type; and\\n(3) Emergency egress training for each member of the crew, to occur for all members of the crew—\\n(i) At least monthly while such members are employed on board the vessels; and\\n(ii) Each time a crew member joins the crew of such vessel.\\n\\n(c) Training conducted on a sister vessel may be considered equivalent to the initial, monthly, and quarterly training requirements contained in paragraphs (a) and (b) of this section.\\n\\n(d) Crew training shall be logged or otherwise documented for review by the Coast Guard upon request. The training entry shall include the following information.\\n(1) Date of the training; and\\n(2) General description of the training topics.",
+  "15.730": "§ 15.730 Language requirements.\\n\\n(a) The provisions of 46 U.S.C. 8702 relating to language apply generally to vessels of at least 100 GRT except:\\n(1) Vessels operating on rivers and lakes except the Great Lakes;\\n(2) A manned barge except a seagoing barge or a barge to which chapter 37 of 46 U.S.C. applies;\\n(3) A passenger vessel operating on a coastwise voyage of not more than 300 miles or an international voyage of not more than 300 miles;\\n(4) A vessel of not more than 100 GRT;\\n(5) A vessel of not more than 1600 gross tons on an international voyage of not more than 300 miles or a coastwise voyage of not more than 300 miles;\\n(6) A vessel of not more than 1600 gross tons on a voyage of not more than 300 miles between ports in the United States and ports in Mexico, Canada, or the British West Indies; and\\n(7) All fish processing vessels with respect to those personnel primarily employed in the preparation of fish or fish products or in a support position not related to navigation.\\n\\n(b) 46 U.S.C. 8702(b) requires that onboard vessels departing U.S. ports 75 percent of the crew in each department onboard is able to understand any order spoken by the officers.\\n\\n(c) The words able to understand any order spoken by the officers relates to any order to a member of the crew when directing the performance of that person's duties and orders relating to emergency situations such as used for response to a fire or in using lifesaving equipment. It is not expected that a member of the deck department understand terminology normally used only in the engineroom or vice versa.\\n\\n(d) Whenever information is provided to the Coast Guard that a vessel fails to comply with the specified language requirements the Coast Guard investigates the allegation to determine its validity. In determining if an allegation is factual, the Coast Guard may require a demonstration by the officers and crew that appropriate orders are understood. The demonstration will require that orders be spoken to the individual members of the crew by the officers in the language ordinarily and customarily used by the officers.",
+  "15.855": "§ 15.855 Cabin watchmen and fire patrolmen.\\n\\n(a) On vessels carrying passengers at night, the Master or Person in Charge must ensure that a suitable number of watchmen are in the vicinity of the cabins or staterooms and on each deck, to guard against and give alarm in case of fire or other danger.\\n\\n(b) On a fish processing vessel of more than 100 GRT, there must be a suitable number of watchmen trained in firefighting onboard when hot work is being done, to guard against and give alarm in case of a fire.\\n\\n(c) For the watchmen described in paragraph (a) of this section, the owner or operator of an uninspected passenger vessel not more than 300 GRT may substitute the use of fire detectors, heat detectors, smoke detectors, and high-water alarms with audible- and visual-warning indicators, in addition to other required safety alarms, only when each of the following conditions are met:\\n(1) Fire detectors are located in each space containing machinery or fuel tanks per § 181.400(c) of this chapter.\\n(2) All grills, broilers, and deep-fat fryers are fitted with a grease extraction hood per § 181.425 of this chapter.\\n(3) Heat and/or smoke detectors are located in each galley, public accommodation space, enclosed passageway, berthing space, and all crew spaces.\\n(4) High-water alarms are located in each space with a through hull fitting below the deepest load waterline, a machinery space bilge, bilge well, shaft alley bilge, or other space subject to flooding from sea water piping within the space, and a space below the waterline with non-watertight closure such as a space with a non-watertight hatch on the main deck.\\n(5) Each alarm has an audible- and visual-alarm indicator located at the normal operating station and, if the normal operating position is not continually manned and not navigating underway, in an alternate location that must provide the crew, and may at all times provide the passengers, immediate warning of a hazardous condition.\\n(6) The vessel is underway for no more than 12 hours in any 24-hour period, and the Master of the vessel has chosen to operate with less than a three-watch system in accordance with § 15.705.",
+  "15.705": "§ 15.705 Watches.\\n\\n(a) Title 46 U.S.C. 8104 applies to the establishment of watches aboard certain U.S. vessels. The establishment of adequate watches is the responsibility of the vessel's master. The Coast Guard interprets the term “watch” to be the direct performance of vessel operations, whether deck or engine, where such operations would routinely be controlled and performed in a scheduled and fixed rotation. The performance of maintenance or work necessary to the vessel's safe operation on a daily basis does not in itself constitute the establishment of a watch.\\n\\n(b) Subject to exceptions, 46 U.S.C. 8104 requires that when a master of a seagoing vessel of more than 100 GRT establishes watches for the officers, sailors, coal passers, firemen, oilers, and watertenders, “the personnel shall be divided, when at sea, into at least three watches and shall be kept on duty successively to perform ordinary work incidental to the operation and management of the vessel.” Solely for the purposes of this part, “sailors” mean those members of the deck department other than officers, whose duties involve the mechanics of conducting the ship on its voyage, such as helmsman (wheelsman), lookout, etc., and which are necessary to the maintenance of a continuous watch. The term “sailors” is not interpreted to include able seamen and ordinary seamen not performing these duties.\\n\\n(f) Properly manned uninspected passenger vessels of at least 100 GRT—\\n(1) Which are underway for no more than 12 hours in any 24-hour period, and which are adequately moored, anchored, or otherwise secured in a harbor of safe refuge for the remainder of that 24-hour period, may operate with one navigational watch;\\n(2) Which are underway more than 12 hours in any 24-hour period, must provide a minimum of a two-watch system;\\n(3) In no case may the crew of any watch work more than 12 hours in any 24-hour period, except in an emergency.",
+  "15.850": "§ 15.850 Lookouts.\\n\\n(a) The requirements for the maintenance of a proper lookout are specified in Rule 5 of the International Regulations for Preventing Collisions at Sea, 1972 (33 U.S.C. 1602(c)), and Rule 5 of the Inland Navigational Rules Act of 1980 (33 CFR part 83). Lookout is a function to be performed by a member of a navigational watch.\\n\\n(b) On vessels subject to STCW, the individual meeting the requirement of this section must also hold at least an STCW deck endorsement as Rating Forming Part of a Navigational Watch (RFPNW), except as noted in § 15.105(g) for vessels on domestic near-coastal voyages.",
+  "26.03-9": "§ 26.03-9 Voyage plans for uninspected passenger vessels of at least 100 gross tons.\\n\\n(a) The master must prepare a voyage plan that includes a crew and passenger list before taking an uninspected passenger vessel of at least 100 gross tons on a Great Lake, an ocean, or an international voyage.\\n\\n(b) Before departure, the master must communicate the voyage plan ashore, either verbally or in writing. The voyage plan must go to either the vessel's normal berthing location or a representative of the owner or managing operator of the vessel. The master, owner, or operator of the vessel must make the voyage plan available to the Coast Guard upon request.",
+  "26.03-10": "§ 26.03-10 Signaling light.\\n\\nAll vessels of over 150 gross tons, when engaged on an international voyage, shall be equipped with an efficient daylight signaling lamp in accordance with the requirements of subchapter J (Electrical Engineering) of this chapter.",
+  "25.26-10": "§ 25.26-10 EPIRB requirements for uninspected passenger vessels.\\n\\n(a) Uninspected passenger vessels less than 100 gross tons are not required to carry an EPIRB.\\n\\n(b) The owner, operator, or master of an uninspected passenger vessel of at least 100 gross tons must ensure that the vessel does not operate beyond three miles from shore as measured from the territorial sea baseline seaward or more than three miles from the coastline of the Great Lakes, unless it has onboard a float-free, automatically activated Category 1 406 MHz EPIRB stowed in a manner so that it will float free if the vessel sinks.",
+  "25.26-50": "§ 25.26-50 Servicing of EPIRBs.\\n\\n(a) The master of each vessel required to have an EPIRB under this subpart shall ensure that each EPIRB on board is tested and serviced as required by this section.\\n\\n(b) The EPIRB must be tested immediately after installation and at least once each month thereafter, unless it is an EPIRB installed in a Coast Guard approved inflatable liferaft that is tested annually during the servicing of the liferaft by an approved servicing facility. The test shall be conducted in accordance with the manufacturer's instructions, using the visual or audio indicator on the EPIRB. If the EPIRB is not operating, it must be repaired or replaced with an operating EPIRB.\\n\\n(c) The battery of the EPIRB must be replaced—\\n(1) Immediately after the EPIRB is used for any purpose other than being tested; and\\n(2) Before the expiration date that is marked on the battery.",
+  "25.25-17": "§ 25.25-17 Survival craft requirements for uninspected passenger vessels of at least 100 gross tons.\\n\\n(a) Each uninspected passenger vessel of at least 100 gross tons must have adequate survival craft with enough capacity for all persons aboard and must meet one of the following requirements:\\n(1) An inflatable liferaft must be approved under 46 CFR part 160, subparts 160.051 or 160.151, and be equipped with an applicable equipment pack or be approved by another standard specified by the Commandant. Inflatable liferafts must be serviced at a servicing facility approved under 46 CFR part 160, subpart 160.151.\\n(2) An inflatable buoyant apparatus must be approved under 46 CFR part 160, subpart 160.010 or under another standard specified by the Commandant. An inflatable buoyant apparatus must be serviced at a servicing facility approved under 46 CFR part 160, subpart 160.151.\\n\\n(b) If the vessel carries a small boat or boats, the capacity of the small boat or boat(s) may be counted toward the survival craft capacity required by this part. Such small boat or boat(s) must meet the requirements for safe loading and floatation in 33 CFR part 183.",
+  "25.25-5": "§ 25.25-5 Life preservers and other lifesaving equipment required.\\n\\n(a) No person may operate a vessel to which this subpart applies unless it meets the requirements of this subpart.\\n\\n(b) ...\\n\\n(3) In addition to the equipment required by paragraphs (b)(1) and (b)(2) of this section, each vessel 26 feet in length or longer, except for a barge to which this subpart applies, must have at least one approved lifebuoy, and each uninspected passenger vessel of at least 100 gross tons must have at least three approved lifebuoys. Lifebuoys must be approved under approval series 160.050 or 160.150, except that a lifebuoy approved under former 46 CFR 160.009 prior to May 9, 1979 (see 46 CFR chapter I, revised as of October 1, 1979), may be used as long as it is in good and serviceable condition.",
+  "199.90": "§ 199.90 Operating instructions.\\n\\nEach vessel must have posters or signs displayed in the vicinity of each survival craft and the survival craft's launching controls that—\\n(a) Illustrate the purpose of controls;\\n(b) Illustrate the procedures for operating the launching device;\\n(c) Give relevant instructions or warnings;\\n(d) Can be easily seen under emergency lighting conditions; and\\n(e) Display symbols in accordance with IMO Resolution A.760(18).",
+  "80.1061": "§ 80.1061 Special requirements for 406.0-406.1 MHz EPIRB stations.\\n\\n... (e) An identification code, recognized by the National Oceanic and Atmospheric Administration (NOAA)... must be programmed in each EPIRB unit...\\n(f) To enhance protection of life and property it is mandatory that each 406.0-406.1 MHz EPIRB be registered with NOAA before installation and that information be kept up-to-date. ... each 406.0-406.1 MHz EPIRB must be provided on the outside with a clearly discernible permanent plate or label containing the following statement: “The owner of this 406.0-406.1 MHz EPIRB must register the NOAA identification code contained on this label with the National Oceanic and Atmospheric Administration (NOAA)...”",
+  "155.420": "§ 155.420 Pumping, piping and discharge requirements for oceangoing ships of 100 gross tons and above but less than 400 gross tons.\\n\\n(a) No person may operate an oceangoing ship of 100 gross tons and above but less than 400 gross tons that is fitted with main or auxiliary machinery spaces unless:\\n(1) The ship has at least one pump installed to discharge oily mixtures through a fixed piping system to a reception facility;\\n(2) The piping system required by this section has at least one outlet accessible from the weather deck;\\n(3) For a ship on an international voyage, the outlet required by this section has a shore connection that meets the specifications in § 155.430, or the ship has at least one adapter that meets the specifications in § 155.430 and fits the required outlets;\\n(4) For a ship not on an international voyage, the outlet required by this section has a shore connection that is compatible with reception facilities in the ship's area of operation;\\n(5) The ship has a means on the weather deck near the discharge outlet to stop each pump that is used to discharge oily mixtures; and\\n(6) The ship has a stop valve installed for each outlet required by this section.\\n\\n(b) Paragraph (a) of this section does not apply to a ship that has approved oily-water separating equipment for the processing of oily mixtures from bilges or fuel oil tank ballast.\\n\\n(c) This section does not apply to a fixed or floating drilling rig or other platform.",
+  "8104": "46 U.S.C. § 8104 Watches (relevant excerpts)\\n\\n(d) On a merchant vessel of more than 100 gross tons as measured under section 14502 of this title, or an alternate tonnage measured under section 14302 of this title as prescribed by the Secretary under section 14104 of this title (except a vessel only operating on rivers, harbors, lakes (except the Great Lakes), bays, sounds, bayous, and canals, a fishing, fish tender, or whaling vessel, a fish processing vessel of not more than 5,000 gross tons as measured under section 14502 of this title, or an alternate tonnage measured under section 14302 of this title as prescribed by the Secretary under section 14104 of this title, yacht, or vessel engaged in salvage operations), the licensed individuals, sailors, and oilers shall be divided, when at sea, into at least 3 watches, and shall be kept on duty successively to perform ordinary work incident to the operation and management of the vessel. The requirement of this subsection applies to radio officers only when at least 3 radio officers are employed. An individual in the deck or engine department may not be required to work more than 8 hours in one day.",
+  "42": "46 CFR Part 42 — Load Lines (general applicability notes from addendum)\\n\\nApplies to vessels engaged in foreign voyages or international voyages other than solely Great Lakes voyages, domestic voyages by sea, and certain Great Lakes voyages, subject to length and tonnage exceptions as specified in the regulation and the addendum. Authority under 46 USC 5101-5116. Load line marks indicate the maximum amidships draft to which the vessel may be safely loaded. Certificates issued by the Commandant, American Bureau of Shipping, or recognized classification society. Master responsible for certificate on board and logbook entries before departure.",
+  "177.500": "46 CFR 177.500 Means of escape (recommendation context)\\n\\nWhile not strictly required by regulation for all UPVs in the same manner as inspected vessels, the addendum recommends that each space accessible to passengers or used by the crew on a regular basis should have at least two means of escape. The two means of escape should be widely separated and, if possible, at opposite ends or sides of the space to minimize the possibility of one incident blocking both escapes. Means of escape may include normal exits and emergency exits, passageways, stairways, ladders, deck scuttles, and windows. The number and dimensions of the means of escape from each space should be sufficient for rapid evacuation in an emergency for the number of persons served.",
+  "182.610": "46 CFR Subpart 182.610 Steering apparatus (recommended)\\n\\nAn examination of each vessel's engineering equipment and systems should be made to determine its general condition. Electrical installations shall be as such to prevent shock or fire hazards. The installation should be examined for inadequate connections, loose or frayed wiring, improper over current protection, proper grounding, etc. Main engine and auxiliaries should be examined to determine if any immediate hazards exist. Excessive fuel or oil leaks, exhaust leakage, or other especially hazardous conditions should be corrected. Recommended pressure vessel requirements, 46 CFR Subchapter F or ASME standard boiler and pressure vessels. Recommended steering apparatus requirements, 46 CFR Subpart 182.610.",
+  "177.01": "33 CFR 177.01 / 46 USC 4308 / 46 USC 2302 Especially Hazardous Conditions\\n\\nA Coast Guard Boarding Officer may direct the master or individual in charge of a vessel to immediately take reasonable steps necessary for the safety of individuals on board the vessel if the Boarding Officer observes the vessel being operated in an unsafe manner, determines that an especially hazardous condition or other unsafe condition exists. This may include directing the master or individual in charge of the vessel to return the vessel to a mooring and remain there until the situation creating the especially hazardous condition is corrected or other specific action is taken.\\n\\nHazardous conditions or unsafe conditions could include but are not limited to, an operation with—\\n(1) An insufficient number of lifesaving equipment on board, to include serviceable Personal Flotation Devices (PFDs) or adequate survival craft capacity.\\n(2) An inoperable Emergency Position Indicating Radio Beacon (EPIRB) or radio communication equipment when required by regulation. There should be at least one operable means of communicating distress. When both are required, then at least one must be in operable condition to avoid termination of the voyage;\\n(3) Inadequate firefighting equipment on board;\\n(4) Excessive volatile fuel (gasoline or solvents) or volatile fuel vapors in bilges;\\n(5) Instability resulting from overloading, improper loading or lack of freeboard;\\n(6) Inoperable bilge system;\\n(7) The operator or individual in charge is under the influence of alcohol or drugs.\\n(8) A lack of adequate operable navigation lights during periods of reduced visibility;\\n(9) Watertight closures missing or inoperable;\\n(10) Flooding or uncontrolled leakage in any space;\\n(11) Inappropriate operation in a regulated navigational area;\\n(12) Other designated manifestly unsafe condition for a specific voyage on a specific body of water due to inadequate design, construction, material condition, or safety equipment."
+};
+
+const checklistData = [
+  {
+    title: "CREW REQUIREMENTS",
+    items: [
+      { id: "crew_training", text: "Crew Training", detail: 'Owner/charterer/master instructs each crew member on emergency duties prior to first underway and at least quarterly. Training logged. <span class="citation" data-cite="185.420">46 CFR 185.420</span>.' },
+      { id: "language_req", text: "Language Requirements", detail: '75% of the crew in each department able to understand any order spoken by the officers. Applies to vessels ≥100 GT except rivers/lakes (not Great Lakes). <span class="citation" data-cite="15.730">46 CFR 15.730</span> / 46 USC 8702.' },
+      { id: "cabin_watchmen", text: "Cabin Watchmen and Fire Patrolmen", detail: 'Suitable number of watchmen near cabins/staterooms and on each deck at night when carrying passengers. Substitution with detectors allowed under specific conditions for ≤300 GRT. <span class="citation" data-cite="15.855">46 CFR 15.855</span>.' },
+      { id: "watch_system_choice", text: "Watch System for Voyages ≤12 Hours", detail: 'Vessel underway ≤12 hours in any 24-hour period may operate with less than three-watch system if master chooses. <span class="citation" data-cite="15.705">46 CFR 15.705</span>.' }
+    ]
+  },
+  {
+    title: "WATCHSTANDING",
+    items: [
+      { id: "watches", text: "Watches", detail: 'Master responsible for adequate watches. Seagoing vessels >100 GRT: personnel divided into at least three watches. <span class="citation" data-cite="8104">46 USC 8104</span> / <span class="citation" data-cite="15.705">46 CFR 15.705</span>.' },
+      { id: "watch_exceptions", text: "Watch Exceptions Specific to UPVs ≥100 GT", detail: 'Underway ≤12 hrs/24 hrs and adequately moored/anchored remainder: one navigational watch. Underway >12 hrs: minimum two-watch system. No crew member works >12 hrs/24 hrs except emergency. <span class="citation" data-cite="15.705">46 CFR 15.705(f)</span>.' },
+      { id: "lookouts", text: "Lookouts", detail: 'Proper lookout maintained per COLREGS Rule 5 and Inland Rules. Lookout is a function of a member of a navigational watch. <span class="citation" data-cite="15.850">46 CFR 15.850</span>.' }
+    ]
+  },
+  {
+    title: "LOAD LINES (46 CFR §42)",
+    items: [
+      { id: "ll_foreign", text: "Applies to: Foreign / International Voyages", detail: 'U.S. flag vessels on foreign/international voyages by sea (exceptions for new <79 ft, existing <150 GT, etc.). <span class="citation" data-cite="42">46 CFR Part 42</span>.' },
+      { id: "ll_domestic", text: "Applies to: Domestic Voyages by Sea", detail: 'U.S.-flag vessels on domestic (coastwise/intercoastal) voyages, with exceptions for certain State-numbered vessels <150 GT, etc. <span class="citation" data-cite="42">46 CFR Part 42</span>.' },
+      { id: "ll_great_lakes", text: "Applies to: Great Lakes Voyages", detail: 'U.S. flag ≥79 ft and ≥150 GT on solely Great Lakes voyages subject to applicable provisions. <span class="citation" data-cite="42">46 CFR Part 42</span>.' },
+      { id: "ll_authority", text: "Authority", detail: 'Load line marks indicate maximum amidships draft. <span class="citation" data-cite="42">46 USC 5101-5116 / 46 CFR Part 42</span>.' },
+      { id: "ll_marks", text: "Marks to Indicate Load Lines", detail: 'Permanently marked on each side indicating maximum lawful amidships draft. <span class="citation" data-cite="42">46 CFR 42.07-5</span>.' },
+      { id: "ll_certificates", text: "Load Line Certificates", detail: 'Issued by Commandant, ABS, or recognized class society. Certifies correctness of marks and compliance. <span class="citation" data-cite="42">46 CFR Part 42</span>.' },
+      { id: "ll_certificate_onboard", text: "Certificate on Board", detail: 'Valid certificate on board. Master responsible for maintenance and compliance with terms. <span class="citation" data-cite="42">46 CFR Part 42</span>.' },
+      { id: "ll_logbook", text: "Logbook Entries", detail: 'Before departure: load line marks applicable, position of marks (distance in inches), actual drafts forward/aft. Keep log 1 year if own log. <span class="citation" data-cite="42">46 CFR 42.07-20</span>.' }
+    ]
+  },
+  {
+    title: "COMMUNICATIONS",
+    items: [
+      { id: "signaling_lamp", text: "Signaling Lamp", detail: 'Vessels >150 GT on international voyage: efficient daylight-signaling lamp per 46 CFR Subchapter J. <span class="citation" data-cite="26.03-10">46 CFR 26.03-10</span>.' }
+    ]
+  },
+  {
+    title: "VOYAGE PLANS",
+    items: [
+      { id: "voyage_plans", text: "Voyage Plans", detail: 'All UPVs ≥100 tons: plan prepared prior to Ocean or international voyage including crew and passenger list. Communicated ashore (verbal or written) to normal berthing location or representative. Available to CG on request. <span class="citation" data-cite="26.03-9">46 CFR 26.03-9</span>.' }
+    ]
+  },
+  {
+    title: "LIFESAVING EQUIPMENT",
+    items: [
+      { id: "epirbs", text: "EPIRBs", detail: 'Must not operate beyond 3 miles from shore unless float-free, automatically activated Category 1 406 MHz EPIRB stowed to float free if vessel sinks. <span class="citation" data-cite="25.26-10">46 CFR 25.26-10</span>.' },
+      { id: "epirb_servicing", text: "Servicing of EPIRBs", detail: 'Tested immediately after installation and at least monthly per manufacturer. Battery replaced after any use other than testing or before expiration. Hydrostatic release USCG approved and not expired. <span class="citation" data-cite="25.26-50">46 CFR 25.26-50</span>.' },
+      { id: "epirb_registration", text: "Registration of EPIRBs", detail: '406 MHz registered with NOAA before installation; info kept up-to-date. Proof of registration on board. Registration sticker on EPIRB. <span class="citation" data-cite="80.1061">47 CFR 80.1061</span>.' },
+      { id: "ring_buoys", text: "Ring Life Buoys", detail: 'At least three ring life buoys. Must be USCG approved. <span class="citation" data-cite="25.25-5">46 CFR 25.25-5(d)</span>.' },
+      { id: "survival_craft", text: "Survival Craft", detail: 'Adequate survival craft for all persons aboard. Inflatable liferaft (46 CFR 160.051 or SOLAS) or buoyant apparatus (160.010), serviced at approved facility. Small boats may count if meeting 33 CFR 183. <span class="citation" data-cite="25.25-17">46 CFR 25.25-17</span>.' },
+      { id: "survival_storage", text: "Storage of Survival Craft", detail: 'Stowed close to accommodation/service spaces, readily accessible and deployed or float free. Disposable hydrostatic releases approved and not expired. See <span class="citation" data-cite="25.25-17">46 CFR 25.25-17</span> and related guidance.' },
+      { id: "survival_marking_stowage", text: "Survival Craft - Marking of Stowage Locations", detail: 'Numbered consecutively from bow (odd starboard, even port). Stowage location marked with capacity. Symbols per IMO Res. A.760(18). Related to <span class="citation" data-cite="25.25-17">46 CFR 25.25-17</span>.' },
+      { id: "survival_marking_ops", text: "Survival Craft - Marking of Operating Instructions", detail: 'Posters/signs near each survival craft and controls illustrating purpose, procedures, instructions/warnings, visible under emergency lighting, symbols per IMO A.760(18). <span class="citation" data-cite="199.90">46 CFR 199.90</span>.' },
+      { id: "survival_further", text: "Further Guidance for Survival Craft & Lifesaving Appliances", detail: 'Communications, PFDs, muster lists, launching stations, stowage, equipment, training/drills, operational readiness (use 46 CFR Subchapter W as good practice). See <span class="citation" data-cite="25.25-17">46 CFR 25.25-17</span>.' }
+    ]
+  },
+  {
+    title: "MEANS OF ESCAPE",
+    items: [
+      { id: "means_escape", text: "Means of Escape", detail: 'Recommendation: Each space accessible to passengers or regularly used by crew should have at least two widely separated means of escape (exits, ladders, scuttles, windows). Sufficient for rapid evacuation. <span class="citation" data-cite="177.500">46 CFR 177.500</span>.' }
+    ]
+  },
+  {
+    title: "EXIT SIGNS",
+    items: [
+      { id: "exit_signs", text: "Exit Signs", detail: 'Recommendation: Illuminated exit signs per 46 CFR Subchapter J. Small rooms with secondary escape not obvious should have red \'EMERGENCY EXIT\' sign. Related to means of escape <span class="citation" data-cite="177.500">46 CFR 177.500</span>.' }
+    ]
+  },
+  {
+    title: "PUMPING, PIPING AND DISCHARGE REQUIREMENT (33 CFR 155.420)",
+    items: [
+      { id: "pump_oily", text: "Pump and Piping for Oily Mixtures", detail: 'Oceangoing ships 100–400 GT: at least one pump to discharge oily mixtures through fixed piping to reception facility. Outlet accessible from weather deck; stop valve; means to stop each pump. Shore connection or adapter as required. <span class="citation" data-cite="155.420">33 CFR 155.420</span>.' },
+      { id: "oily_water_sep", text: "Oily-Water Separating Equipment", detail: 'Paragraph (a) does not apply if ship has approved oily-water separating equipment for processing oily mixtures from bilges or fuel oil tank ballast. <span class="citation" data-cite="155.420">33 CFR 155.420(b)</span>.' }
+    ]
+  },
+  {
+    title: "ENGINEERING",
+    items: [
+      { id: "engineering_exam", text: "Engineering Equipment Examination", detail: 'Examine general condition of engineering equipment and systems. Electrical installations free of shock/fire hazards (loose wiring, improper protection, grounding). Main engine/auxiliaries for leaks or hazards. Recommended: pressure vessel reqs, steering apparatus. <span class="citation" data-cite="182.610">46 CFR Subpart 182.610</span>.' }
+    ]
+  },
+  {
+    title: "ESPECIALLY HAZARDOUS CONDITIONS & UNSAFE OPERATIONS",
+    items: [
+      { id: "haz_lifesaving", text: "Insufficient Lifesaving Equipment", detail: 'Check for insufficient number of lifesaving equipment including serviceable PFDs or inadequate survival craft capacity. <span class="citation" data-cite="177.01">33 CFR 177.01 / 46 USC 4308 / 46 USC 2302</span>.' },
+      { id: "haz_epirb", text: "Inoperable EPIRB or Radio", detail: 'Inoperable EPIRB or radio communication equipment when required. At least one operable means of communicating distress. <span class="citation" data-cite="177.01">33 CFR 177.01</span>.' },
+      { id: "haz_firefighting", text: "Inadequate Firefighting Equipment", detail: 'Inadequate firefighting equipment on board. <span class="citation" data-cite="177.01">33 CFR 177.01</span>.' },
+      { id: "haz_fuel", text: "Excessive Volatile Fuel / Vapors", detail: 'Excessive volatile fuel (gasoline or solvents) or volatile fuel vapors in bilges. <span class="citation" data-cite="177.01">33 CFR 177.01</span>.' },
+      { id: "haz_stability", text: "Instability / Lack of Freeboard", detail: 'Instability resulting from overloading, improper loading, or lack of freeboard. <span class="citation" data-cite="177.01">33 CFR 177.01</span>.' },
+      { id: "haz_bilge", text: "Inoperable Bilge System", detail: 'Inoperable bilge system. <span class="citation" data-cite="177.01">33 CFR 177.01</span>.' },
+      { id: "haz_influence", text: "Operator Under Influence", detail: 'Operator or individual in charge under the influence of alcohol or drugs. <span class="citation" data-cite="177.01">33 CFR 177.01</span>.' },
+      { id: "haz_nav_lights", text: "Inadequate Navigation Lights", detail: 'Lack of adequate operable navigation lights during periods of reduced visibility. <span class="citation" data-cite="177.01">33 CFR 177.01</span>.' },
+      { id: "haz_closures", text: "Watertight Closures", detail: 'Watertight closures missing or inoperable. <span class="citation" data-cite="177.01">33 CFR 177.01</span>.' },
+      { id: "haz_flooding", text: "Flooding or Uncontrolled Leakage", detail: 'Flooding or uncontrolled leakage in any space. <span class="citation" data-cite="177.01">33 CFR 177.01</span>.' },
+      { id: "haz_nav_area", text: "Inappropriate Operation in Regulated Area", detail: 'Inappropriate operation in a regulated navigational area. <span class="citation" data-cite="177.01">33 CFR 177.01</span>.' },
+      { id: "haz_other", text: "Other Manifestly Unsafe Condition", detail: 'Other designated manifestly unsafe condition for the specific voyage due to inadequate design, construction, material condition, or safety equipment. <span class="citation" data-cite="177.01">33 CFR 177.01</span>.' }
+    ]
+  }
+];
+
+function renderChecklist() {
+  const container = document.getElementById('checklist');
+  container.innerHTML = '';
+  checklistData.forEach((section) => {
+    const sec = document.createElement('div');
+    sec.className = 'section';
+    sec.innerHTML = `
+      <div class="section-header" onclick="toggleSection(this)">
+        ${section.title}
+        <span class="toggle-icon">▼</span>
+      </div>
+      <div class="section-body"></div>
+    `;
+    const body = sec.querySelector('.section-body');
+    section.items.forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'item';
+      row.innerHTML = `
+        <div class="item-text">
+          ${item.text}
+          ${item.detail ? `<small>${item.detail}</small>` : ''}
+        </div>
+        <div class="choices">
+          <label><input type="radio" name="${item.id}" value="YES" onchange="onRadioChange()"> <span>YES</span></label>
+          <label><input type="radio" name="${item.id}" value="NO" onchange="onRadioChange()"> <span>NO</span></label>
+          <label><input type="radio" name="${item.id}" value="NA" onchange="onRadioChange()"> <span>NA</span></label>
+        </div>
+      `;
+      body.appendChild(row);
+    });
+    container.appendChild(sec);
+  });
+  document.querySelectorAll('.citation').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openModal(el.dataset.cite);
+    });
+  });
+  loadSavedData();
+  updateProgress();
+}
+
+function openModal(citeId) {
+  const text = citations[citeId] || 'Full text not loaded in this version. Please consult the official eCFR or USC for the complete regulation.';
+  const linkMap = {
+    "185.420": "https://www.ecfr.gov/current/title-46/chapter-I/subchapter-T/part-185/subpart-D/section-185.420",
+    "15.730": "https://www.ecfr.gov/current/title-46/chapter-I/subchapter-B/part-15/subpart-G/section-15.730",
+    "15.855": "https://www.ecfr.gov/current/title-46/chapter-I/subchapter-B/part-15/subpart-H/section-15.855",
+    "15.705": "https://www.ecfr.gov/current/title-46/chapter-I/subchapter-B/part-15/subpart-G/section-15.705",
+    "15.850": "https://www.ecfr.gov/current/title-46/chapter-I/subchapter-B/part-15/subpart-H/section-15.850",
+    "26.03-9": "https://www.ecfr.gov/current/title-46/chapter-I/subchapter-C/part-26/subpart-26.03/section-26.03-9",
+    "26.03-10": "https://www.ecfr.gov/current/title-46/chapter-I/subchapter-C/part-26/subpart-26.03/section-26.03-10",
+    "25.26-10": "https://www.ecfr.gov/current/title-46/chapter-I/subchapter-C/part-25/subpart-25.26/section-25.26-10",
+    "25.26-50": "https://www.ecfr.gov/current/title-46/chapter-I/subchapter-C/part-25/subpart-25.26/section-25.26-50",
+    "25.25-17": "https://www.ecfr.gov/current/title-46/chapter-I/subchapter-C/part-25/subpart-25.25/section-25.25-17",
+    "25.25-5": "https://www.ecfr.gov/current/title-46/chapter-I/subchapter-C/part-25/subpart-25.25/section-25.25-5",
+    "199.90": "https://www.ecfr.gov/current/title-46/chapter-I/subchapter-W/part-199/subpart-B/section-199.90",
+    "80.1061": "https://www.ecfr.gov/current/title-47/chapter-I/subchapter-D/part-80/subpart-V/section-80.1061",
+    "155.420": "https://www.ecfr.gov/current/title-33/chapter-I/subchapter-O/part-155/subpart-B/section-155.420",
+    "8104": "https://www.govinfo.gov/content/pkg/USCODE-2023-title46/html/USCODE-2023-title46-subtitleII-partF-chap81-sec8104.htm",
+    "42": "https://www.ecfr.gov/current/title-46/chapter-I/subchapter-E/part-42",
+    "177.500": "https://www.ecfr.gov/current/title-46/chapter-I/subchapter-T/part-177/subpart-E/section-177.500",
+    "182.610": "https://www.ecfr.gov/current/title-46/chapter-I/subchapter-T/part-182/subpart-F/section-182.610",
+    "177.01": "https://www.ecfr.gov/current/title-33/chapter-I/subchapter-S/part-177/section-177.01"
+  };
+  const officialLink = linkMap[citeId] || "https://www.ecfr.gov/";
+  let title = citeId;
+  if (citeId === "8104") title = "46 U.S.C. § 8104";
+  else if (citeId === "42") title = "46 CFR Part 42";
+  else if (citeId === "177.01") title = "33 CFR 177.01";
+  else if (citeId === "177.500") title = "46 CFR 177.500";
+  else if (citeId === "182.610") title = "46 CFR 182.610";
+  else if (citeId.startsWith("15.") || citeId.startsWith("25.") || citeId.startsWith("26.") || citeId.startsWith("185.") || citeId === "199.90") title = "46 CFR " + citeId;
+  else if (citeId.startsWith("155.")) title = "33 CFR " + citeId;
+  else if (citeId === "80.1061") title = "47 CFR 80.1061";
+  document.getElementById("modalTitle").textContent = title;
+  let content = text.replace(/\\n/g, "\n");
+  content += "\n\nOfficial source (.gov): <a href=\"" + officialLink + "\" target=\"_blank\" rel=\"noopener noreferrer\">" + officialLink + "</a>";
+  document.getElementById("modalContent").innerHTML = content;
+  document.getElementById("modalOverlay").classList.add("active");
+}
+
+function closeModal(event) {
+  if (!event || event.target.id === 'modalOverlay' || event.target.classList.contains('close-btn')) {
+    document.getElementById('modalOverlay').classList.remove('active');
+  }
+}
+
+function toggleSection(header) {
+  const body = header.nextElementSibling;
+  const icon = header.querySelector('.toggle-icon');
+  if (body.style.display === 'none') {
+    body.style.display = 'block';
+    icon.textContent = '▼';
+  } else {
+    body.style.display = 'none';
+    icon.textContent = '▶';
+  }
+}
+
+function toggleAll(expand) {
+  document.querySelectorAll('.section-body').forEach(body => {
+    body.style.display = expand ? 'block' : 'none';
+  });
+  document.querySelectorAll('.toggle-icon').forEach(icon => {
+    icon.textContent = expand ? '▼' : '▶';
+  });
+}
+
+function updateProgress() {
+  const total = checklistData.reduce((sum, s) => sum + s.items.length, 0);
+  const answered = document.querySelectorAll('input[type="radio"]:checked').length;
+  document.getElementById('progressText').textContent = `${answered} / ${total}`;
+  const pct = total ? Math.round((answered / total) * 100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+function getFormData() {
+  const meta = {
+    vesselName: document.getElementById('vesselName').value,
+    officialNumber: document.getElementById('officialNumber').value,
+    inspectionDate: document.getElementById('inspectionDate').value,
+    inspector: document.getElementById('inspector').value,
+    location: document.getElementById('location').value
+  };
+  const answers = {};
+  document.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
+    answers[radio.name] = radio.value;
+  });
+  return { meta, answers, savedAt: new Date().toISOString() };
+}
+
+function scheduleSave() {
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(saveNow, 500);
+  document.getElementById('saveStatus').textContent = 'Saving...';
+}
+
+function onRadioChange() {
+  updateProgress();
+  scheduleSave();
+}
+
+function saveNow() {
+  try {
+    const data = getFormData();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    document.getElementById('saveStatus').textContent = `Auto-saved at ${time}`;
+  } catch (e) {
+    document.getElementById('saveStatus').textContent = 'Save failed (storage full?)';
+    console.error(e);
+  }
+}
+
+function loadSavedData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (data.meta) {
+      document.getElementById('vesselName').value = data.meta.vesselName || '';
+      document.getElementById('officialNumber').value = data.meta.officialNumber || '';
+      document.getElementById('inspectionDate').value = data.meta.inspectionDate || '';
+      document.getElementById('inspector').value = data.meta.inspector || '';
+      document.getElementById('location').value = data.meta.location || '';
+    }
+    if (data.answers) {
+      Object.keys(data.answers).forEach(id => {
+        const radio = document.querySelector(`input[name="${id}"][value="${data.answers[id]}"]`);
+        if (radio) radio.checked = true;
+      });
+    }
+    if (data.savedAt) {
+      const date = new Date(data.savedAt);
+      document.getElementById('saveStatus').textContent = `Loaded saved data (${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`;
+    }
+  } catch (e) {
+    console.error('Failed to load saved data', e);
+    document.getElementById('saveStatus').textContent = 'Could not load previous data';
+  }
+}
+
+function resetChecklist() {
+  if (confirm('Reset the form on screen? (Saved data in browser will remain until you clear it.)')) {
+    document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
+    document.querySelectorAll('.meta-form input').forEach(i => i.value = '');
+    updateProgress();
+    document.getElementById('saveStatus').textContent = 'Form reset (saved data still in browser)';
+  }
+}
+
+function clearSavedData() {
+  if (confirm('Permanently delete all saved progress from this device/browser? This cannot be undone.')) {
+    localStorage.removeItem(STORAGE_KEY);
+    document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
+    document.querySelectorAll('.meta-form input').forEach(i => i.value = '');
+    updateProgress();
+    document.getElementById('saveStatus').textContent = 'Saved data cleared';
+  }
+}
+
+function exportPDF() {
+  saveNow();
+  window.print();
+}
+
+document.addEventListener('DOMContentLoaded', renderChecklist);
+</script>
+</body>
+</html>
